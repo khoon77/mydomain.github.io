@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뉴스 & 날씨 알림 서비스</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; max-width: 800px; margin: auto; }
+    h1 { text-align: center; }
+    .section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .news-list, .weather-info { margin-top: 10px; }
+    .news-item { margin-bottom: 5px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>경제 뉴스 & 날씨 알림 서비스</h1>
+
+  <div class="section">
+    <h2>한국 뉴스 TOP 5</h2>
+    <div id="korea-news" class="news-list">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h2>국제 뉴스 TOP 5</h2>
+    <div id="world-news" class="news-list">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h2>선택 지역 날씨</h2>
+    <label for="city">날씨 지역 선택:</label>
+    <select id="city">
+      <option value="Seoul">Seoul</option>
+      <option value="New York">New York</option>
+      <option value="Tokyo">Tokyo</option>
+      <option value="London">London</option>
+      <option value="Paris">Paris</option>
+    </select>
+    <div id="weather" class="weather-info">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h2>텔레그램 알림 설정</h2>
+    <label for="telegram-id">텔레그램 ID (@username):</label>
+    <input type="text" id="telegram-id">
+
+    <label for="alert-time">전송 시간선택:</label>
+    <select id="alert-time">
+      <option value="06:00">06:00</option>
+      <option value="07:00">07:00</option>
+      <option value="08:00">08:00</option>
+    </select>
+
+    <button onclick="submitAlarm()">알림 신청</button>
+  </div>
+
+  <script>
+    async function loadNews() {
+      const proxy = "https://cors-anywhere.herokuapp.com/";
+      const key = "5607b3b2fc7d4deb969a4bc5b5977c31";
+
+      const koreaNews = await fetch(`${proxy}https://newsapi.org/v2/top-headlines?country=kr&pageSize=5&apiKey=${key}`).then(res => res.json());
+      const worldNews = await fetch(`${proxy}https://newsapi.org/v2/top-headlines?language=en&pageSize=5&apiKey=${key}`).then(res => res.json());
+
+      document.getElementById('korea-news').innerHTML = koreaNews.articles.map(n => `<div class="news-item">• <a href="${n.url}" target="_blank">${n.title}</a></div>`).join('');
+      document.getElementById('world-news').innerHTML = worldNews.articles.map(n => `<div class="news-item">• <a href="${n.url}" target="_blank">${n.title}</a></div>`).join('');
+    }
+
+    async function loadWeather(city) {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=YOUR_API_KEY&lang=kr`);
+      const data = await res.json();
+      document.getElementById("weather").innerHTML = `☀️ ${data.name}: ${data.weather[0].description}, ${data.main.temp} °C`;
+    }
+
+    document.getElementById('city').addEventListener('change', e => {
+      loadWeather(e.target.value);
+    });
+
+    function submitAlarm() {
+      const id = document.getElementById('telegram-id').value;
+      const time = document.getElementById('alert-time').value;
+      const city = document.getElementById('city').value;
+
+      // 실제로는 서버나 Firebase에 저장해야 함
+      alert(`텔레그램 ID: ${id}\n시간: ${time}\n날씨 지역: ${city}\n신청 완료!`);
+    }
+
+    loadNews();
+    loadWeather("Seoul");
+  </script>
+</body>
+</html>
